@@ -3,7 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebJobs.Extensions.Ftp", "WebJobs.Extensions.Ftp\WebJobs.Extensions.Ftp.csproj", "{1A24A5BF-91AF-49B5-ADF7-D46CA219BAB8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebJobs.Extensions.Ftp.Console", "WebJobs.Extensions.Ftp.Console\WebJobs.Extensions.Ftp.Console.csproj", "{7513B1D3-B0EA-44C8-8615-90162E58102B}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1A24A5BF-91AF-49B5-ADF7-D46CA219BAB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A24A5BF-91AF-49B5-ADF7-D46CA219BAB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A24A5BF-91AF-49B5-ADF7-D46CA219BAB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A24A5BF-91AF-49B5-ADF7-D46CA219BAB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7513B1D3-B0EA-44C8-8615-90162E58102B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7513B1D3-B0EA-44C8-8615-90162E58102B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7513B1D3-B0EA-44C8-8615-90162E58102B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7513B1D3-B0EA-44C8-8615-90162E58102B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
