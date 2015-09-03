@@ -10,10 +10,7 @@ namespace WebJobs.Extensions.Ftp.Console
 {
     public class Functions
     {
-        public static void MyTrigger([FtpTrigger(Server = "localhost",
-                                                    Path = "in",
-                                                    Username = "mats",
-                                                    Password = "mats",
+        public static void MyTrigger([FtpTrigger(Path = "in",
             Filemask = "not_implemented_yet")] FtpTriggerValue value)
         {
             System.Console.WriteLine("Filecontent was... " + value.FileContent);

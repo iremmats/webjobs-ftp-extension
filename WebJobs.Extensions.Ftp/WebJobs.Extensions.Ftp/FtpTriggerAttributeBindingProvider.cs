@@ -1,24 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-
 using ArxOne.Ftp;
+using Microsoft.Azure.WebJobs.Extensions.Files;
 using Microsoft.Azure.WebJobs.Extensions.Framework;
+using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Azure.WebJobs.Host.Executors;
 using Microsoft.Azure.WebJobs.Host.Listeners;
 using Microsoft.Azure.WebJobs.Host.Protocols;
 using Microsoft.Azure.WebJobs.Host.Triggers;
-using Microsoft.WindowsAzure.Storage.Shared.Protocol;
 using WebJobs.Extensions.Ftp;
+using WebJobs.Extensions.Ftp.Listener;
 
 namespace Webjobs.Extensions.Ftp
 {
@@ -27,13 +27,31 @@ namespace Webjobs.Extensions.Ftp
         public string FileContent { get; set; }
         public string Filename { get; set; }
 
-        public string CreatedDate { get; set; }
+        string CreatedDate { get; set; }
         // TODO: Define the default type that your trigger binding
         // binds to (the type representing the trigger event).
     }
 
     internal class FtpTriggerAttributeBindingProvider : ITriggerBindingProvider
     {
+        private readonly FtpConfiguration _config;
+        private readonly TraceWriter _trace;
+
+        public FtpTriggerAttributeBindingProvider(FtpConfiguration config, TraceWriter trace)
+        {
+            if (config == null)
+            {
+                throw new ArgumentNullException("config");
+            }
+            if (trace == null)
+            {
+                throw new ArgumentNullException("trace");
+            }
+
+            _config = config;
+            _trace = trace;
+        }
+
         public Task<ITriggerBinding> TryCreateAsync(TriggerBindingProviderContext context)
         {
             if (context == null)
@@ -48,48 +66,71 @@ namespace Webjobs.Extensions.Ftp
                 return Task.FromResult<ITriggerBinding>(null);
             }
 
-            // TODO: Define the types your binding supports here
-            if (parameter.ParameterType != typeof(FtpTriggerValue) &&
-                parameter.ParameterType != typeof(string))
+            IEnumerable<Type> types = StreamValueBinder.SupportedTypes.Union(new Type[] { typeof(FileStream), typeof(FileSystemEventArgs), typeof(FileInfo) });
+            if (!ValueBinder.MatchParameterType(context.Parameter, types))
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
-                    "Can't bind SampleTriggerAttribute to type '{0}'.", parameter.ParameterType));
+                    "Can't bind FtpTriggerAttribute to type '{0}'.", parameter.ParameterType));
             }
 
-            return Task.FromResult<ITriggerBinding>(new FtpTriggerBinding(context.Parameter, new FtpConfiguration(attribute.Server, attribute.Path, attribute.Username, attribute.Password, attribute.Filemask)));
+
+            return Task.FromResult<ITriggerBinding>(new FtpTriggerBinding(_config, parameter, _trace));
         }
 
         private class FtpTriggerBinding : ITriggerBinding
         {
             private readonly ParameterInfo _parameter;
-            private readonly IReadOnlyDictionary<string, Type> _bindingContract;
+            private readonly FileTriggerAttribute _attribute;
             private readonly FtpConfiguration _config;
+            private readonly BindingContract _bindingContract;
+            private readonly TraceWriter _trace;
 
-            public FtpTriggerBinding(ParameterInfo parameter, FtpConfiguration config)
+            public FtpTriggerBinding(FtpConfiguration config, ParameterInfo parameter, TraceWriter trace)
             {
-                _parameter = parameter;
                 _config = config;
-                _bindingContract = CreateBindingDataContract();
+                _parameter = parameter;
+                _trace = trace;
+                _attribute = parameter.GetCustomAttribute<FileTriggerAttribute>(inherit: false);
+                //_bindingContract = CreateBindingContract();
             }
 
             public IReadOnlyDictionary<string, Type> BindingDataContract
             {
-                get { return _bindingContract; }
+                get
+                {
+                    return _bindingContract.BindingDataContract;
+                }
             }
 
+            //TODO: change this
             public Type TriggerValueType
             {
-                get { return typeof(FtpTriggerValue); }
+                get { return typeof(FileSystemEventArgs); }
             }
 
             public Task<ITriggerData> BindAsync(object value, ValueBindingContext context)
             {
-                // TODO: Perform any required conversions on the value
-                // E.g. convert from Dashboard invoke string to our trigger
-                // value type
-                FtpTriggerValue triggerValue = value as FtpTriggerValue;
-                IValueBinder valueBinder = new FtpValueBinder(_parameter, triggerValue);
-                return Task.FromResult<ITriggerData>(new TriggerData(valueBinder, GetBindingData(triggerValue)));
+                FtpTriggerValue ftv = new FtpTriggerValue();
+                
+                FileSystemEventArgs fileEvent = value as FileSystemEventArgs;
+                if (fileEvent == null)
+                {
+                    string filePath = value as string;
+                    if (!string.IsNullOrEmpty(filePath))
+                    {
+                        // TODO: This only supports Created events. For Dashboard invocation, how can we
+                        // handle Change events?
+                        string directory = Path.GetDirectoryName(filePath);
+                        string fileName = Path.GetFileName(filePath);
+
+                        fileEvent = new FileSystemEventArgs(WatcherChangeTypes.Created, directory, fileName);
+                    }
+                }
+
+                IValueBinder valueBinder = new FtpValueBinder(_parameter, ftv);
+                IReadOnlyDictionary<string, object> bindingData = GetBindingData(ftv);
+
+                return Task.FromResult<ITriggerData>(new TriggerData(valueBinder, bindingData));
             }
 
             public Task<IListener> CreateListenerAsync(ListenerFactoryContext context)
@@ -218,12 +259,14 @@ namespace Webjobs.Extensions.Ftp
 
                 private void ConnectToFtpSite(object sender, System.Timers.ElapsedEventArgs e)
                 {
+                    NetworkCredential credential;
+                    var connectionString = ConfigurationManager.ConnectionStrings["AzureWebJobsFtp"].ConnectionString;
+                    Uri uri = CreateFtpUriFromConnectionString(connectionString, out credential);
 
-                    var credential = new NetworkCredential(_config.Username, _config.Password);
 
-                    using (var ftpClient = new FtpClient(new Uri("ftp://" + _config.Server), credential))
+                    using (var ftpClient = new FtpClient(uri, credential))
                     {
-                        var lista = ftpClient.ListEntries(_config.Path);
+                        var lista = ftpClient.ListEntries("hej");
                         foreach (FtpEntry ftpEntry in lista)
                         {
                             Stream s = ftpClient.Retr(ftpEntry.Path, FtpTransferMode.Binary);
@@ -235,7 +278,6 @@ namespace Webjobs.Extensions.Ftp
                             {
                                 TriggerValue = new FtpTriggerValue
                                 {
-                                    CreatedDate = ftpEntry.Date.ToString(),
                                     FileContent = text,
                                     Filename = ftpEntry.Name
                                 }
@@ -246,6 +288,14 @@ namespace Webjobs.Extensions.Ftp
                             Console.WriteLine(ftpEntry.Path + " has been deleted.");
                         }
                     }
+                }
+
+                private Uri CreateFtpUriFromConnectionString(string connectionString, out NetworkCredential credentials)
+                {
+                    // TODO: extract user/pass from connection string
+                    // TODO: Validate connection string
+                    credentials = new NetworkCredential("mats","mats");
+                    return new Uri("ftp://localhost");
                 }
              
             }
