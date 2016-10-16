@@ -3,6 +3,8 @@ using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.WindowsAzure.Storage.Shared.Protocol;
+using Renci.SshNet;
 using WebJobs.Extensions.Ftp.Config;
 using WebJobs.Extensions.Ftp.Model;
 
@@ -21,27 +23,18 @@ namespace WebJobs.Extensions.Ftp.Client
         
         public async Task SendFileAsync(FtpMessage ftpMessage)
         {
-            var host = ftpMessage.FtpHost;
-            var path = ftpMessage.Filename;
-            var username = ftpMessage.Username;
-            var password = ftpMessage.Password;
-            var port = ftpMessage.FtpPort;
-
-
-            using (var client = new FTPSClient())
+            switch (ftpMessage.FtpHost.Scheme)
             {
-                client.Connect(host.Host,
-                    new NetworkCredential(username, password),
-                    ESSLSupportMode.CredentialsRequired |
-                    ESSLSupportMode.DataChannelRequested);
-
-                var ftps = client.PutFile(path);
-
-                var bytes = ReadToEnd(ftpMessage.Data);
-                await ftps.WriteAsync(bytes, 0, bytes.Length);
-                ftps.Close();
+                case "sftp":
+                    await SendBySftp(ftpMessage);
+                    break;
+                case "ftp":
+                    await SendByFtps(ftpMessage);
+                    break;
+                default: throw new ArgumentException("Unsupported uri scheme. Only ftps and sftp is supported.", nameof(ftpMessage));
             }
         }
+            
 
         private byte[] ReadToEnd(System.IO.Stream stream)
         {
@@ -92,6 +85,47 @@ namespace WebJobs.Extensions.Ftp.Client
                 {
                     stream.Position = originalPosition;
                 }
+            }
+        }
+
+        private async Task SendBySftp(FtpMessage ftpMessage)
+        {
+            var host = ftpMessage.FtpHost;
+            var path = ftpMessage.Filename;
+            var username = ftpMessage.Username;
+            var password = ftpMessage.Password;
+            var port = ftpMessage.FtpPort;
+
+            using (var sftpClient = new SftpClient(host.Host, port, username, password))
+            {
+                sftpClient.Connect();
+                //sftpClient.ChangeDirectory("tmp");
+                sftpClient.UploadFile(ftpMessage.Data, path);
+                sftpClient.Disconnect();
+            }
+        }
+
+        private async Task SendByFtps(FtpMessage ftpMessage)
+        {
+            var host = ftpMessage.FtpHost;
+            var path = ftpMessage.Filename;
+            var username = ftpMessage.Username;
+            var password = ftpMessage.Password;
+            var port = ftpMessage.FtpPort;
+
+
+            using (var client = new FTPSClient())
+            {
+                client.Connect(host.Host,
+                    new NetworkCredential(username, password),
+                    ESSLSupportMode.CredentialsRequired |
+                    ESSLSupportMode.DataChannelRequested);
+
+                var ftps = client.PutFile(path);
+
+                var bytes = ReadToEnd(ftpMessage.Data);
+                await ftps.WriteAsync(bytes, 0, bytes.Length);
+                ftps.Close();
             }
         }
     }
