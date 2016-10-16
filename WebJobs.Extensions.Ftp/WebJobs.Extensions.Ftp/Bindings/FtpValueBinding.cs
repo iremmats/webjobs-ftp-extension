@@ -21,8 +21,7 @@ namespace WebJobs.Extensions.Ftp.Bindings
 
         public object GetValue()
         {
-            if (_ftpAttribute.ReadOnStartup) Console.WriteLine("Hej");
-            else Console.WriteLine("Då");
+            //TODO: Allow access to a file on ftp and not just send to a file
             return null;
         }
 
@@ -32,8 +31,8 @@ namespace WebJobs.Extensions.Ftp.Bindings
 
         public async Task SetValueAsync(object value, CancellationToken cancellationToken)
         {
-            var file = value as FtpFile;
-            await _client.SendFileAsync(file.Filename, file.Stream);
+            var ftpMessage = value as FtpMessage;
+            await _client.SendFileAsync(ftpMessage);
         }
     }
 }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using WebJobs.Extensions.Ftp.Config;
+using WebJobs.Extensions.Ftp.Model;
 
 namespace WebJobs.Extensions.Ftp.Client
 {
@@ -11,27 +12,32 @@ namespace WebJobs.Extensions.Ftp.Client
     {
         private readonly FtpConfiguration _config;
 
+        
+
         public FtpClient(FtpConfiguration config)
         {
             _config = config;
         }
-
-
-
-
-        public async Task SendFileAsync(string path, Stream data)
+        
+        public async Task SendFileAsync(FtpMessage ftpMessage)
         {
+            var host = ftpMessage.FtpHost;
+            var path = ftpMessage.Filename;
+            var username = ftpMessage.Username;
+            var password = ftpMessage.Password;
+            var port = ftpMessage.FtpPort;
+
+
             using (var client = new FTPSClient())
             {
-                client.Connect(_config.Host.Host,
-                    new NetworkCredential(_config.Username,
-                        _config.Password),
+                client.Connect(host.Host,
+                    new NetworkCredential(username, password),
                     ESSLSupportMode.CredentialsRequired |
                     ESSLSupportMode.DataChannelRequested);
 
                 var ftps = client.PutFile(path);
 
-                var bytes = ReadToEnd(data);
+                var bytes = ReadToEnd(ftpMessage.Data);
                 await ftps.WriteAsync(bytes, 0, bytes.Length);
                 ftps.Close();
             }

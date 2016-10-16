@@ -32,7 +32,7 @@ namespace WebJobs.Extensions.Ftp.Bindings
                 return Task.FromResult<IBinding>(null);
 
             // TODO: Include any other parameter types this binding supports in this check
-            var supportedTypes = new List<Type> { typeof(FtpFile) };
+            var supportedTypes = new List<Type> { typeof(FtpMessage) };
             if (!ValueBinder.MatchParameterType(context.Parameter, supportedTypes))
                 throw new InvalidOperationException($"Can't bind {nameof(FtpAttribute)} to type '{parameter.ParameterType}'.");
 
