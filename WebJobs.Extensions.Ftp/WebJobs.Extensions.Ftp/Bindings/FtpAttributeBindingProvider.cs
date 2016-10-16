@@ -1,10 +1,9 @@
-﻿using Microsoft.Azure.WebJobs.Extensions.Files;
-using Microsoft.Azure.WebJobs.Extensions.Framework;
-using Microsoft.Azure.WebJobs.Host;
+﻿using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Azure.WebJobs.Extensions.Bindings;
 using WebJobs.Extensions.Ftp.Config;
 using WebJobs.Extensions.Ftp.Model;
 

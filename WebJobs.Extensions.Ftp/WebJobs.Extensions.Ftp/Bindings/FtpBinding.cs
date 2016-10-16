@@ -1,7 +1,6 @@
 ﻿using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Azure.WebJobs.Host.Protocols;
-using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using WebJobs.Extensions.Ftp.Client;

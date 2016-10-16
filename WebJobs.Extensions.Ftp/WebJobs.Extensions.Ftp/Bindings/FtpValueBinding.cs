@@ -1,9 +1,5 @@
-﻿using Microsoft.Azure.WebJobs.Extensions.Framework;
-using Microsoft.Azure.WebJobs.Host.Bindings;
+﻿using Microsoft.Azure.WebJobs.Host.Bindings;
 using System;
-using System.IO;
-using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using WebJobs.Extensions.Ftp.Client;

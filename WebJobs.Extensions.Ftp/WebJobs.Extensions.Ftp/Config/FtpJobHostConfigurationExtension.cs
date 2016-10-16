@@ -32,8 +32,8 @@ namespace WebJobs.Extensions.Ftp.Config
 
                 // Register our extension binding providers
                 context.Config.RegisterBindingExtensions(
-                    new FtpAttributeBindingProvider(_ftpConfiguration, context.Trace),
-                    new FtpTriggerAttributeBindingProvider(_ftpConfiguration, context.Trace)
+                    new FtpAttributeBindingProvider(_ftpConfiguration, context.Trace)
+                    //new FtpTriggerAttributeBindingProvider(_ftpConfiguration, context.Trace)
                 );
             }
         }
