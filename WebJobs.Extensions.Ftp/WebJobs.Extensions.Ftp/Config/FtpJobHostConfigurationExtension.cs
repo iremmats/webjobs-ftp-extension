@@ -16,6 +16,15 @@ namespace WebJobs.Extensions.Ftp.Config
             config.RegisterExtensionConfigProvider(new FtpExtensionConfig(ftpConfiguration));
         }
 
+        public static void UseFtp(this JobHostConfiguration config)
+        {
+            if (config == null)
+                throw new ArgumentNullException(nameof(config));
+
+            // Register our extension configuration provider
+            config.RegisterExtensionConfigProvider(new FtpExtensionConfig(new FtpConfiguration()));
+        }
+
         private class FtpExtensionConfig : IExtensionConfigProvider
         {
             private readonly FtpConfiguration _ftpConfiguration;

@@ -15,14 +15,12 @@ namespace WebJobs.Extensions.Ftp.Console
                 DashboardConnectionString =
                     ""
             };
-            jobhostConfiguration.UseFtp(new FtpConfiguration(
-                username: "",
-                password: "",
-                host: new Uri("")
-                ));
+
+            jobhostConfiguration.UseFtp();
+
             using (var host = new JobHost(jobhostConfiguration))
             {
-                host.Call(typeof(Functions).GetMethod("myAction"));
+                host.Call(typeof(Functions).GetMethod("SendFileToFtps"));
             }
         }
     }

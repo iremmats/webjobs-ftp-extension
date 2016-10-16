@@ -4,6 +4,11 @@ namespace WebJobs.Extensions.Ftp.Config
 {
     public class FtpConfiguration
     {
+        public FtpConfiguration()
+        {
+            
+        }
+
         public FtpConfiguration(
             string username,
             string password,
