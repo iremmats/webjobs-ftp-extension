@@ -15,13 +15,20 @@ namespace WebJobs.Extensions.Ftp.Bindings
 
     {
         private readonly IFtpClient _client;
+        private readonly FtpAttribute _ftpAttribute;
 
-        public FtpValueBinder(IFtpClient client)
+        public FtpValueBinder(IFtpClient client, FtpAttribute ftpAttribute)
         {
             _client = client;
+            _ftpAttribute = ftpAttribute;
         }
 
-        public object GetValue() => null;
+        public object GetValue()
+        {
+            if (_ftpAttribute.ReadOnStartup) Console.WriteLine("Hej");
+            else Console.WriteLine("Då");
+            return null;
+        }
 
         public string ToInvokeString() => String.Empty;
 

@@ -6,7 +6,7 @@ namespace WebJobs.Extensions.Ftp.Console
 {
     public class Functions
     {
-        public static void myAction([Ftp] out FtpFile file)
+        public static void SendFileToFtps([Ftp(ReadOnStartup = true)] out FtpFile file)
         {
             file = new FtpFile
             {

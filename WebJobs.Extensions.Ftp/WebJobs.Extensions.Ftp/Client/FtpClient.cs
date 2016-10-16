@@ -16,6 +16,9 @@ namespace WebJobs.Extensions.Ftp.Client
             _config = config;
         }
 
+
+
+
         public async Task SendFileAsync(string path, Stream data)
         {
             using (var client = new FTPSClient())

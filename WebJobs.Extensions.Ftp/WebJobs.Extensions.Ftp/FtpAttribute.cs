@@ -1,10 +1,10 @@
 ﻿using System;
-using WebJobs.Extensions.Ftp.Config;
 
 namespace WebJobs.Extensions.Ftp
 {
     [AttributeUsage(AttributeTargets.Parameter)]
-    public class FtpAttribute : Attribute
+    public sealed class FtpAttribute : Attribute
     {
+        public bool ReadOnStartup;
     }
 }

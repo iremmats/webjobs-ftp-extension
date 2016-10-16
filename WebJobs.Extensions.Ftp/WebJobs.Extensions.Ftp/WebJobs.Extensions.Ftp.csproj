@@ -104,9 +104,9 @@
     <Compile Include="Client\IFtpClient.cs" />
     <Compile Include="Config\FtpConfiguration.cs" />
     <Compile Include="Config\FtpJobHostConfigurationExtension.cs" />
+    <Compile Include="FtpAttribute.cs" />
     <Compile Include="FtpTriggerAttribute.cs" />
     <Compile Include="Bindings\FtpTriggerAttributeBindingProvider.cs" />
-    <Compile Include="FtpAtribute.cs" />
     <Compile Include="Listener\FtpFileSystemWatcher.cs" />
     <Compile Include="Listener\ProcessingStates.cs" />
     <Compile Include="Listener\StatusFileEntry.cs" />

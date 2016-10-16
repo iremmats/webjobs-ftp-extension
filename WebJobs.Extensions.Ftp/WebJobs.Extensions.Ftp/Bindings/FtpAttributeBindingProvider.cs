@@ -24,6 +24,7 @@ namespace WebJobs.Extensions.Ftp.Bindings
 
         public Task<IBinding> TryCreateAsync(BindingProviderContext context)
         {
+            
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
             var parameter = context.Parameter;
@@ -36,7 +37,7 @@ namespace WebJobs.Extensions.Ftp.Bindings
             if (!ValueBinder.MatchParameterType(context.Parameter, supportedTypes))
                 throw new InvalidOperationException($"Can't bind {nameof(FtpAttribute)} to type '{parameter.ParameterType}'.");
 
-            return Task.FromResult<IBinding>(new FtpBinding(_config, parameter, _trace));
+            return Task.FromResult<IBinding>(new FtpBinding(_config, parameter, _trace, (FtpAttribute)attribute[0]));
         }
     }
 }

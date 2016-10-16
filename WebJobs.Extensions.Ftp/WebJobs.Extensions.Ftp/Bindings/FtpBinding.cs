@@ -14,19 +14,21 @@ namespace WebJobs.Extensions.Ftp.Bindings
         private readonly ParameterInfo _parameter;
         private readonly FtpConfiguration _config;
         private TraceWriter _trace;
+        private readonly FtpAttribute _ftpAttribute;
 
-        public FtpBinding(FtpConfiguration config, ParameterInfo parameter, TraceWriter trace)
+        public FtpBinding(FtpConfiguration config, ParameterInfo parameter, TraceWriter trace, FtpAttribute ftpAttribute)
         {
             _config = config;
             _parameter = parameter;
             _trace = trace;
+            _ftpAttribute = ftpAttribute;
         }
 
         public Task<IValueProvider> BindAsync(object value, ValueBindingContext context) =>
-            Task.FromResult<IValueProvider>(new FtpValueBinder(new FtpClient(_config)));
+            Task.FromResult<IValueProvider>(new FtpValueBinder(new FtpClient(_config), _ftpAttribute));
 
         public Task<IValueProvider> BindAsync(BindingContext context) =>
-            Task.FromResult<IValueProvider>(new FtpValueBinder(new FtpClient(_config)));
+            Task.FromResult<IValueProvider>(new FtpValueBinder(new FtpClient(_config), _ftpAttribute));
 
         public ParameterDescriptor ToParameterDescriptor() =>
              new ParameterDescriptor
