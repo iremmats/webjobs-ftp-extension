@@ -30,6 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AlexPilotti.FTPS.Client, Version=1.1.0.27735, Culture=neutral, PublicKeyToken=48316da1e84b328d, processorArchitecture=MSIL">
+      <HintPath>..\packages\AlexFTPS.1.1.0.27735\lib\net20\AlexPilotti.FTPS.Client.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="ArxOne.Ftp, Version=1.8.0.0, Culture=neutral, PublicKeyToken=da7223da01d9ab51, processorArchitecture=MSIL">
       <HintPath>..\packages\ArxOne.Ftp.1.8.0.0\lib\net40-Client\ArxOne.Ftp.dll</HintPath>
       <Private>True</Private>
@@ -93,19 +97,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FtpConfiguration.cs" />
-    <Compile Include="FtpJobHostConfigurationExtension.cs" />
+    <Compile Include="Bindings\FtpAttributeBindingProvider.cs" />
+    <Compile Include="Bindings\FtpBinding.cs" />
+    <Compile Include="Bindings\FtpValueBinding.cs" />
+    <Compile Include="Client\FtpClient.cs" />
+    <Compile Include="Client\IFtpClient.cs" />
+    <Compile Include="Config\FtpConfiguration.cs" />
+    <Compile Include="Config\FtpJobHostConfigurationExtension.cs" />
     <Compile Include="FtpTriggerAttribute.cs" />
-    <Compile Include="FtpTriggerAttributeBindingProvider.cs" />
+    <Compile Include="Bindings\FtpTriggerAttributeBindingProvider.cs" />
+    <Compile Include="FtpAtribute.cs" />
     <Compile Include="Listener\FtpFileSystemWatcher.cs" />
     <Compile Include="Listener\ProcessingStates.cs" />
     <Compile Include="Listener\StatusFileEntry.cs" />
+    <Compile Include="Model\FtpFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

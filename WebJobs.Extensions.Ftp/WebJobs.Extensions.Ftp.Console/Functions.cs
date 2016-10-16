@@ -1,19 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
-using Webjobs.Extensions.Ftp;
+using WebJobs.Extensions.Ftp.Model;
 
 namespace WebJobs.Extensions.Ftp.Console
 {
     public class Functions
     {
-        public static void MyTrigger([FtpTrigger(Path = "in",
-            Filemask = "not_implemented_yet")] FtpTriggerValue value)
+        public static void myAction([Ftp] out FtpFile file)
         {
-            System.Console.WriteLine("Filecontent was... " + value.FileContent);
+            file = new FtpFile
+            {
+                Filename = "/teamhakantest/ftpTest.txt",
+                Stream = new MemoryStream(Encoding.UTF8.GetBytes("Hej"))
+            };
         }
     }
 }

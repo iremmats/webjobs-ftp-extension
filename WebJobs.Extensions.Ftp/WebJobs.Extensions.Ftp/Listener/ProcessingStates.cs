@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Azure.WebJobs.Extensions.Ftp.Listener
+﻿namespace WebJobs.Extensions.Ftp.Listener
 {
     /// <summary>
     /// Enumeration of the possible processing states a

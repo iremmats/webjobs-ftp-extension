@@ -1,4 +1,13 @@
-﻿using System;
+﻿using ArxOne.Ftp;
+using Microsoft.Azure.WebJobs.Extensions.Files;
+using Microsoft.Azure.WebJobs.Extensions.Framework;
+using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Azure.WebJobs.Host.Bindings;
+using Microsoft.Azure.WebJobs.Host.Executors;
+using Microsoft.Azure.WebJobs.Host.Listeners;
+using Microsoft.Azure.WebJobs.Host.Protocols;
+using Microsoft.Azure.WebJobs.Host.Triggers;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
@@ -8,26 +17,16 @@ using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using ArxOne.Ftp;
-using Microsoft.Azure.WebJobs.Extensions.Files;
-using Microsoft.Azure.WebJobs.Extensions.Framework;
-using Microsoft.Azure.WebJobs.Host;
-using Microsoft.Azure.WebJobs.Host.Bindings;
-using Microsoft.Azure.WebJobs.Host.Executors;
-using Microsoft.Azure.WebJobs.Host.Listeners;
-using Microsoft.Azure.WebJobs.Host.Protocols;
-using Microsoft.Azure.WebJobs.Host.Triggers;
-using WebJobs.Extensions.Ftp;
-using WebJobs.Extensions.Ftp.Listener;
+using WebJobs.Extensions.Ftp.Config;
 
-namespace Webjobs.Extensions.Ftp
+namespace WebJobs.Extensions.Ftp.Bindings
 {
     public class FtpTriggerValue
     {
         public string FileContent { get; set; }
         public string Filename { get; set; }
 
-        string CreatedDate { get; set; }
+        private string CreatedDate { get; set; }
         // TODO: Define the default type that your trigger binding
         // binds to (the type representing the trigger event).
     }
@@ -41,11 +40,11 @@ namespace Webjobs.Extensions.Ftp
         {
             if (config == null)
             {
-                throw new ArgumentNullException("config");
+                throw new ArgumentNullException(nameof(config));
             }
             if (trace == null)
             {
-                throw new ArgumentNullException("trace");
+                throw new ArgumentNullException(nameof(trace));
             }
 
             _config = config;
@@ -56,23 +55,19 @@ namespace Webjobs.Extensions.Ftp
         {
             if (context == null)
             {
-                throw new ArgumentNullException("context");
+                throw new ArgumentNullException(nameof(context));
             }
 
-            ParameterInfo parameter = context.Parameter;
-            FtpTriggerAttribute attribute = parameter.GetCustomAttribute<FtpTriggerAttribute>(inherit: false);
+            var parameter = context.Parameter;
+            var attribute = parameter.GetCustomAttribute<FtpTriggerAttribute>(inherit: false);
             if (attribute == null)
-            {
                 return Task.FromResult<ITriggerBinding>(null);
-            }
 
-            IEnumerable<Type> types = StreamValueBinder.SupportedTypes.Union(new Type[] { typeof(FileStream), typeof(FileSystemEventArgs), typeof(FileInfo) });
+            var types = StreamValueBinder.SupportedTypes.Union(new Type[] { typeof(FileStream), typeof(FileSystemEventArgs), typeof(FileInfo) });
             if (!ValueBinder.MatchParameterType(context.Parameter, types))
             {
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
-                    "Can't bind FtpTriggerAttribute to type '{0}'.", parameter.ParameterType));
+                throw new InvalidOperationException($"Can't bind {nameof(FtpTriggerAttribute)} to type '{parameter.ParameterType}'.");
             }
-
 
             return Task.FromResult<ITriggerBinding>(new FtpTriggerBinding(_config, parameter, _trace));
         }
@@ -111,7 +106,7 @@ namespace Webjobs.Extensions.Ftp
             public Task<ITriggerData> BindAsync(object value, ValueBindingContext context)
             {
                 FtpTriggerValue ftv = new FtpTriggerValue();
-                
+
                 FileSystemEventArgs fileEvent = value as FileSystemEventArgs;
                 if (fileEvent == null)
                 {
@@ -227,7 +222,6 @@ namespace Webjobs.Extensions.Ftp
                         AutoReset = true
                     };
 
-
                     _timer.Elapsed += ConnectToFtpSite;
                     //_timer.Elapsed += OnTimer;
                 }
@@ -255,14 +249,13 @@ namespace Webjobs.Extensions.Ftp
                 public void Cancel()
                 {
                     // TODO: cancel any outstanding tasks initiated by this listener
-                }    
+                }
 
                 private void ConnectToFtpSite(object sender, System.Timers.ElapsedEventArgs e)
                 {
                     NetworkCredential credential;
                     var connectionString = ConfigurationManager.ConnectionStrings["AzureWebJobsFtp"].ConnectionString;
                     Uri uri = CreateFtpUriFromConnectionString(connectionString, out credential);
-
 
                     using (var ftpClient = new FtpClient(uri, credential))
                     {
@@ -294,10 +287,9 @@ namespace Webjobs.Extensions.Ftp
                 {
                     // TODO: extract user/pass from connection string
                     // TODO: Validate connection string
-                    credentials = new NetworkCredential("mats","mats");
+                    credentials = new NetworkCredential("mats", "mats");
                     return new Uri("ftp://localhost");
                 }
-             
             }
         }
     }

@@ -1,10 +1,9 @@
 ﻿using System;
 using System.IO;
-using Microsoft.Azure.WebJobs.Extensions.Files.Listener;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Microsoft.Azure.WebJobs.Extensions.Ftp.Listener
+namespace WebJobs.Extensions.Ftp.Listener
 {
     /// <summary>
     /// Represents a single status entry in the status file.
