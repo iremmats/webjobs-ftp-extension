@@ -116,7 +116,8 @@ namespace WebJobs.Extensions.Ftp.Client
             {
                 sftpClient.Connect();
                 //sftpClient.ChangeDirectory("tmp");
-                sftpClient.UploadFile(ftpMessage.Data, path);
+                var ms = new MemoryStream(ftpMessage.Data);
+                sftpClient.UploadFile(ms, path);
                 sftpClient.Disconnect();
             }
         }
@@ -138,9 +139,8 @@ namespace WebJobs.Extensions.Ftp.Client
                     ESSLSupportMode.DataChannelRequested);
 
                 var ftps = client.PutFile(path);
-
-                var bytes = ReadToEnd(ftpMessage.Data);
-                await ftps.WriteAsync(bytes, 0, bytes.Length);
+                
+                await ftps.WriteAsync(ftpMessage.Data, 0, ftpMessage.Data.Length);
                 ftps.Close();
             }
         }
@@ -161,7 +161,7 @@ namespace WebJobs.Extensions.Ftp.Client
                 return new FtpMessage
                 {
                     Configuration = config,
-                    Data = new MemoryStream(data),
+                    Data = data,
                     Filename = path
                 };
             }
@@ -183,10 +183,11 @@ namespace WebJobs.Extensions.Ftp.Client
                     ESSLSupportMode.DataChannelRequested);
 
                 var ftps = client.GetFile(path);
+                var data = ReadToEnd(ftps);
                 return new FtpMessage
                 {
                     Configuration = config,
-                    Data = ftps,
+                    Data = data,
                     Filename = path
                 };
             }

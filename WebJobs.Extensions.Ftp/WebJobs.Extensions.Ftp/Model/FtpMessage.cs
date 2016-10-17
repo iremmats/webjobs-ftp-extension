@@ -12,7 +12,7 @@ namespace WebJobs.Extensions.Ftp.Model
     {
         public string Filename { get; set; }
         public FtpConfiguration Configuration { get; set; }
-        public Stream Data { get; set; }
+        public byte[] Data { get; set; }
         public bool Send { get; set; }
     }
 }
