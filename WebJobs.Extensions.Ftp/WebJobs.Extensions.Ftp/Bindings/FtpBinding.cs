@@ -24,10 +24,10 @@ namespace WebJobs.Extensions.Ftp.Bindings
         }
 
         public Task<IValueProvider> BindAsync(object value, ValueBindingContext context) =>
-            Task.FromResult<IValueProvider>(new FtpValueBinder(new FtpClient(_config), _ftpAttribute));
+            Task.FromResult<IValueProvider>(new FtpValueBinder(new FtpClient(_config),_config, _ftpAttribute));
 
         public Task<IValueProvider> BindAsync(BindingContext context) =>
-            Task.FromResult<IValueProvider>(new FtpValueBinder(new FtpClient(_config), _ftpAttribute));
+            Task.FromResult<IValueProvider>(new FtpValueBinder(new FtpClient(_config), _config, _ftpAttribute));
 
         public ParameterDescriptor ToParameterDescriptor() =>
              new ParameterDescriptor

@@ -23,18 +23,34 @@ namespace WebJobs.Extensions.Ftp.Client
         
         public async Task SendFileAsync(FtpMessage ftpMessage)
         {
-            switch (ftpMessage.FtpHost.Scheme)
+            if (ftpMessage.Send)
+            {
+                switch (ftpMessage.Configuration.FtpHost.Scheme)
+                {
+                    case "sftp":
+                        await SendBySftp(ftpMessage);
+                        break;
+                    case "ftps":
+                        await SendByFtps(ftpMessage);
+                        break;
+                    default: throw new ArgumentException("Unsupported uri scheme. Only ftps and sftp is supported.", nameof(ftpMessage));
+                }
+            }
+            
+        }
+
+        public async Task<FtpMessage> GetFileAsync(FtpConfiguration config, string path)
+        {
+            switch (config.FtpHost.Scheme)
             {
                 case "sftp":
-                    await SendBySftp(ftpMessage);
-                    break;
-                case "ftp":
-                    await SendByFtps(ftpMessage);
-                    break;
-                default: throw new ArgumentException("Unsupported uri scheme. Only ftps and sftp is supported.", nameof(ftpMessage));
+                    return await GetFromSftp(config, path);
+                case "ftps":
+                    return await GetFromFtps(config, path);
+                default: throw new ArgumentException("Unsupported uri scheme. Only ftps and sftp is supported.", nameof(config));
             }
         }
-            
+
 
         private byte[] ReadToEnd(System.IO.Stream stream)
         {
@@ -90,11 +106,11 @@ namespace WebJobs.Extensions.Ftp.Client
 
         private async Task SendBySftp(FtpMessage ftpMessage)
         {
-            var host = ftpMessage.FtpHost;
+            var host = ftpMessage.Configuration.FtpHost;
             var path = ftpMessage.Filename;
-            var username = ftpMessage.Username;
-            var password = ftpMessage.Password;
-            var port = ftpMessage.FtpPort;
+            var username = ftpMessage.Configuration.Username;
+            var password = ftpMessage.Configuration.Password;
+            var port = ftpMessage.Configuration.FtpPort;
 
             using (var sftpClient = new SftpClient(host.Host, port, username, password))
             {
@@ -107,11 +123,11 @@ namespace WebJobs.Extensions.Ftp.Client
 
         private async Task SendByFtps(FtpMessage ftpMessage)
         {
-            var host = ftpMessage.FtpHost;
+            var host = ftpMessage.Configuration.FtpHost;
             var path = ftpMessage.Filename;
-            var username = ftpMessage.Username;
-            var password = ftpMessage.Password;
-            var port = ftpMessage.FtpPort;
+            var username = ftpMessage.Configuration.Username;
+            var password = ftpMessage.Configuration.Password;
+            var port = ftpMessage.Configuration.FtpPort;
 
 
             using (var client = new FTPSClient())
@@ -126,6 +142,53 @@ namespace WebJobs.Extensions.Ftp.Client
                 var bytes = ReadToEnd(ftpMessage.Data);
                 await ftps.WriteAsync(bytes, 0, bytes.Length);
                 ftps.Close();
+            }
+        }
+
+        private async Task<FtpMessage> GetFromSftp(FtpConfiguration config, string path)
+        {
+            var host = config.FtpHost.Host;
+            var username = config.Username;
+            var password = config.Password;
+            var port = config.FtpPort;
+
+            using (var sftpClient = new SftpClient(host, port, username, password))
+            {
+                sftpClient.Connect();
+                var data = sftpClient.ReadAllBytes(path);
+                sftpClient.Disconnect();
+
+                return new FtpMessage
+                {
+                    Configuration = config,
+                    Data = new MemoryStream(data),
+                    Filename = path
+                };
+            }
+        }
+
+        private async Task<FtpMessage> GetFromFtps(FtpConfiguration config, string path)
+        {
+            var host = config.FtpHost.Host;
+            var username = config.Username;
+            var password = config.Password;
+            var port = config.FtpPort;
+
+
+            using (var client = new FTPSClient())
+            {
+                client.Connect(host,
+                    new NetworkCredential(username, password),
+                    ESSLSupportMode.CredentialsRequired |
+                    ESSLSupportMode.DataChannelRequested);
+
+                var ftps = client.GetFile(path);
+                return new FtpMessage
+                {
+                    Configuration = config,
+                    Data = ftps,
+                    Filename = path
+                };
             }
         }
     }

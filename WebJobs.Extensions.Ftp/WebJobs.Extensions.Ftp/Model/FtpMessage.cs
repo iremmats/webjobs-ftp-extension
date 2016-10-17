@@ -11,7 +11,8 @@ namespace WebJobs.Extensions.Ftp.Model
     public class FtpMessage
     {
         public string Filename { get; set; }
-        public FtpConfiguration config { get; set; }
+        public FtpConfiguration Configuration { get; set; }
         public Stream Data { get; set; }
+        public bool Send { get; set; }
     }
 }

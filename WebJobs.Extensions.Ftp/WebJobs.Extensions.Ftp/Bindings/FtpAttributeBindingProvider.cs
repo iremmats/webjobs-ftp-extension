@@ -28,7 +28,7 @@ namespace WebJobs.Extensions.Ftp.Bindings
                 throw new ArgumentNullException(nameof(context));
             var parameter = context.Parameter;
             var attribute = parameter.GetCustomAttributes(typeof(FtpAttribute), inherit: false);
-            if (attribute == null)
+            if (attribute == null || attribute.Length == 0)
                 return Task.FromResult<IBinding>(null);
 
             // TODO: Include any other parameter types this binding supports in this check

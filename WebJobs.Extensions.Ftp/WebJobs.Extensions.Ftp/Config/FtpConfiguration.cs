@@ -12,6 +12,10 @@ namespace WebJobs.Extensions.Ftp.Config
             Password = password;
         }
 
+        public FtpConfiguration()
+        {
+            
+        }
         //TODO: implement this
         //public string RootFolder { get; set; }
         public Uri FtpHost { get; set; }
